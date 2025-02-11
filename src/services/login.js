@@ -6,4 +6,10 @@ const login = async credentials => {
     return res.data
 }
 
-export default { login }
+const logout = async () => {
+    const res = await axios.delete(baseUrl)
+    console.log(`retuned data ${res.data}`)
+    return res.data
+}
+
+export default { login, logout }
