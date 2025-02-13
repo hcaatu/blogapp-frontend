@@ -53,7 +53,7 @@ const App = () => {
       console.log('wrong credentials')
       setNotification('wrong username or password')
       timeout()
-    } 
+    }
   }
 
   const handleLogout = async (event) => {
@@ -90,7 +90,7 @@ const App = () => {
     }
 
     // using then instead of async/await to mitigate delay in array sorting
-    try { 
+    try {
       blogService.update(updatedBlog).then(response => {
         const blog = response.data
       })
@@ -99,7 +99,7 @@ const App = () => {
       const updatedBlogIndex = blogs.indexOf(blogObject)
       if (updatedBlogIndex > -1) {
         const updatedBlogArray = blogs.toSpliced(updatedBlogIndex, 1, updatedBlog)
-      setBlogs(updatedBlogArray.toSorted((a, b) => b.likes - a.likes))
+        setBlogs(updatedBlogArray.toSorted((a, b) => b.likes - a.likes))
       }
       console.log(blogs)
 
@@ -115,7 +115,7 @@ const App = () => {
           const removedBlog = response.data
           console.log(`removed blog ${blogObject.title}`)
         })
-  
+
         const deletedBlogIndex = blogs.indexOf(blogObject)
         if (deletedBlogIndex > -1 ) {
           const updatedBlogArray = blogs.toSpliced(deletedBlogIndex, 1)
@@ -131,15 +131,15 @@ const App = () => {
     <div>
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
-        <input type='text' 
-          value={username} 
+        <input type='text'
+          value={username}
           name='username'
           placeholder='username'
           onChange={({ target }) => setUsername(target.value)}>
         </input>
-          <br></br>
-        <input type='password' 
-          value={password} 
+        <br></br>
+        <input type='password'
+          value={password}
           name='password'
           placeholder='password'
           onChange={({ target }) => setPassword(target.value)}>
@@ -166,21 +166,20 @@ const App = () => {
 
       {!user && loginForm()}
       {user && <div>
-          {logoutForm()}
-          <Togglable buttonLabel={'Add blog'}>
-            <AddBlogForm createBlog={createBlog} />
-          </Togglable>
-        </div>
-        }
+        {logoutForm()}
+        <Togglable buttonLabel={'Add blog'}>
+          <AddBlogForm createBlog={createBlog} />
+        </Togglable>
+      </div>
+      }
 
       <h2>Blogs</h2>
       {!user && blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} user={{username: null}}/>
-        )}
+        <Blog key={blog.id} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} user={{ username: null }}/>
+      )}
       {user && blogs.map(blog =>
         <Blog key={blog.id} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} user={user}/>
-        )}
-      
+      )}
     </div>
   )
 }
