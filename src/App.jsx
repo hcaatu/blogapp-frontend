@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
+import AddBlogForm from './components/AddBlogForm'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -11,16 +13,11 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [notification, setNotification] = useState(null)
 
-  // blog form
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
-
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )  
+      setBlogs( blogs.toSorted((a, b) => b.likes - a.likes) )
+    )
   }, [])
 
   useEffect(() => {
@@ -28,6 +25,7 @@ const App = () => {
     if (loggedInUserJSON) {
       const user = JSON.parse(loggedInUserJSON)
       setUser(user)
+      console.log(user)
       blogService.setToken(user.token)
     }
   }, [])
@@ -67,22 +65,65 @@ const App = () => {
     setUser(null)
   }
 
-  const createBlog = async (event) => {
-    event.preventDefault()
-    console.log(`creating a new blog titled ${title}`)
-
+  const createBlog = async (blogObject) => {
     try {
-      const blog = await blogService.createNew({ title, author, url })
+      const blog = await blogService.createNew(blogObject)
       setBlogs(blogs.concat(blog))
-      setTitle('')
-      setAuthor('')
-      setUrl('')
-      setNotification(`created a new blog titled ${title}`)
+      setNotification(`created a new blog titled ${blog.title}`)
       timeout()
     } catch (exception) {
       console.log('oopsie')
+      console.log(exception)
       setNotification('an error occured')
       timeout()
+    }
+  }
+
+  const updateBlog = (blogObject) => {
+    const updatedBlog = {
+      id: blogObject.id,
+      title: blogObject.title,
+      author: blogObject.author,
+      likes: blogObject.likes += 1,
+      url: blogObject.url,
+      user: blogObject.user
+    }
+
+    // using then instead of async/await to mitigate delay in array sorting
+    try { 
+      blogService.update(updatedBlog).then(response => {
+        const blog = response.data
+      })
+      // replace the liked blog with a new object
+      // and sort the array in desc order based on likes
+      const updatedBlogIndex = blogs.indexOf(blogObject)
+      if (updatedBlogIndex > -1) {
+        const updatedBlogArray = blogs.toSpliced(updatedBlogIndex, 1, updatedBlog)
+      setBlogs(updatedBlogArray.toSorted((a, b) => b.likes - a.likes))
+      }
+      console.log(blogs)
+
+    } catch (exception) {
+      console.log(exception)
+    }
+  }
+
+  const removeBlog = (blogObject) => {
+    if (window.confirm(`Remove blog ${blogObject.title} ${blogObject.author}?`)) {
+      try {
+        blogService.remove(blogObject).then(response => {
+          const removedBlog = response.data
+          console.log(`removed blog ${blogObject.title}`)
+        })
+  
+        const deletedBlogIndex = blogs.indexOf(blogObject)
+        if (deletedBlogIndex > -1 ) {
+          const updatedBlogArray = blogs.toSpliced(deletedBlogIndex, 1)
+          setBlogs(updatedBlogArray.toSorted((a, b) => b.likes - a.likes))
+        }
+      } catch (exception) {
+        console.log(exception)
+      }
     }
   }
 
@@ -117,37 +158,6 @@ const App = () => {
     </div>
   )
 
-  const addBlogForm = () => (
-    <div>
-      <h2>create new</h2>
-      <form onSubmit={createBlog}>
-        <input type="text" 
-          value={title}
-          name='title'
-          placeholder='title'
-          onChange={({ target }) => setTitle(target.value)}>
-        </input>
-          <br></br>
-        <input type="text" 
-          value={author}
-          name='author'
-          placeholder='author'
-          onChange={({ target }) => setAuthor(target.value)}>
-        </input>
-          <br></br>
-        <input type="text" 
-          value={url}
-          name='url'
-          placeholder='url'
-          onChange={({ target }) => setUrl(target.value)}>
-        </input>
-          <br></br>
-        <button type='submit'>create</button>
-      </form>
-    </div>
-  )
-
-
   return (
     <div>
       <h2>Blog App</h2>
@@ -157,13 +167,18 @@ const App = () => {
       {!user && loginForm()}
       {user && <div>
           {logoutForm()}
-          {addBlogForm()}
+          <Togglable buttonLabel={'Add blog'}>
+            <AddBlogForm createBlog={createBlog} />
+          </Togglable>
         </div>
         }
 
       <h2>Blogs</h2>
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
+      {!user && blogs.map(blog =>
+        <Blog key={blog.id} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} user={{username: null}}/>
+        )}
+      {user && blogs.map(blog =>
+        <Blog key={blog.id} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} user={user}/>
         )}
       
     </div>
