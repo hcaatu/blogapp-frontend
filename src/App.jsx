@@ -81,12 +81,7 @@ const App = () => {
 
   const updateBlog = (blogObject) => {
     const updatedBlog = {
-      id: blogObject.id,
-      title: blogObject.title,
-      author: blogObject.author,
-      likes: blogObject.likes += 1,
-      url: blogObject.url,
-      user: blogObject.user
+      ...blogObject, likes: blogObject.likes += 1
     }
 
     // using then instead of async/await to mitigate delay in array sorting
