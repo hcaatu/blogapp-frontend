@@ -7,6 +7,9 @@ test('renders title', () => {
     author: 'Michael Chan',
     url: 'https://reactpatterns.com/',
   }
+
+  render(<Blog blog={blog} user={{ username: null }} />)
+
+  const title = screen.getByText('React patterns')
+  expect(title).toBeDefined()
 })
-
-
