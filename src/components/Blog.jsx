@@ -30,7 +30,7 @@ const Blog = ({ blog, updateBlog, removeBlog, user }) =>  {
   const infoView = { display: visible ? '' : 'none' }
 
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle} className='blog'>
       <div style={titleView}>
         {blog.title} {blog.author}
         <button onClick={toggleVisibility}>view</button>
